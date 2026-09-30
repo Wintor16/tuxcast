@@ -266,6 +266,37 @@ impl Connected {
     }
 }
 
+/// Packaged builds (AppImage in particular) bundle a copy of libgstreamer
+/// itself, which then looks for plugins relative to *its own* location —
+/// not the distro's `/usr/lib/gstreamer-1.0` — so `pipewiresrc` (from the
+/// separately-packaged `gstreamer1.0-pipewire` /
+/// `gst-plugin-pipewire` distro package) silently fails to resolve even
+/// though it's genuinely installed on the system (confirmed: this exact
+/// symptom reproduced from the published AppImage on a machine with the
+/// plugin present). Pointing GStreamer at the common system plugin
+/// directories as a fallback fixes it without needing to bundle GStreamer
+/// plugins into the package. Only appends paths that actually exist, and
+/// never overrides a path the user/environment already set.
+fn ensure_gst_plugin_path() {
+    if std::env::var_os("GST_PLUGIN_SYSTEM_PATH_1_0").is_some()
+        || std::env::var_os("GST_PLUGIN_SYSTEM_PATH").is_some()
+    {
+        return;
+    }
+    const CANDIDATES: &[&str] = &[
+        "/usr/lib/gstreamer-1.0",
+        "/usr/lib/x86_64-linux-gnu/gstreamer-1.0",
+        "/usr/lib64/gstreamer-1.0",
+        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0",
+    ];
+    let existing: Vec<&str> = CANDIDATES.iter().copied().filter(|p| std::path::Path::new(p).is_dir()).collect();
+    if !existing.is_empty() {
+        let joined = existing.join(":");
+        std::env::set_var("GST_PLUGIN_SYSTEM_PATH_1_0", &joined);
+        std::env::set_var("GST_PLUGIN_SYSTEM_PATH", &joined);
+    }
+}
+
 fn start_capture_pipeline(
     fd: i32,
     node_id: u32,
@@ -273,6 +304,7 @@ fn start_capture_pipeline(
     latest: Arc<Mutex<Option<Frame>>>,
     last_frame_at: Arc<Mutex<Instant>>,
 ) -> Result<gst::Pipeline, String> {
+    ensure_gst_plugin_path();
     gst::init().map_err(|e| e.to_string())?;
 
     let pipeline = gst::Pipeline::new();
