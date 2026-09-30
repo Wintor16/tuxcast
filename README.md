@@ -1,57 +1,36 @@
-[![Discord](https://img.shields.io/badge/Discord-Join%20Server-7289da?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/unPZxXAtfb)
+# 🎣 TuxCast
 
-# 🎣 GPO Autofish v4.0 - GUIDE
+A GPO (Grand Piece Online) fishing companion for Roblox that doesn't stop at Windows — native Tauri/Rust app for **Windows** and **Linux** (KDE/Wayland) alike, so your penguin gets to fish too.
 
-**💬 Join our Discord server:** https://discord.gg/unPZxXAtfb
-
-## 🆕 What's New in v4.0?
-
-**Complete Rewrite - Native, Fast & Tiny:**
-
-- ⚡ **Native Windows app** - Rewritten in Rust with Tauri. One installer under 10 MB, no Python
-- 🧠 **Built-in text recognition** - Uses the OCR that ships with Windows 10/11. No 1 GB download
-- 📌 **HUD pill + tray icon** - A small always-on-top pill sits on the Roblox window. No big window in the way
-- 📐 **Resolution independent** - Every area and click point is saved relative to the Roblox window
-- 🖱️ **On-screen editor** - Draw the bar and drop message areas directly over the game. Bar area can be auto-detected
-- 👀 **Live preview** - Thumbnail and match score for the bar area so you know it works before you start
-- 🧭 **Step-by-step guide** - The Setup page walks you from an empty hotbar to your first catch
-- 🔄 **Imports v3 settings** - Loads your old `default_settings.json`
+Started as a fork of the original Windows-only GPO Autofish; grew a full native Linux backend (KWin-driven window management, portal-based screen capture and input, tesseract OCR) plus a round of Wayland-specific bug fixes along the way.
 
 ## What is this?
 
-This is the **open-source version** of the GPO fishing macro that everyone uses. Unlike the closed-source version that gets flagged as a virus and isn't trustworthy, this version is:
+A transparent, fully open-source fishing macro — no black-box binary, no "trust me":
 
-- ✅ **Fully open source** - You can see and verify all the code
-- ✅ **No viruses** - Clean, transparent, and safe
-- ✅ **Improved** - Better features and reliability
-- ✅ **Community-driven** - Open for contributions and review
-
-The original closed-source macro is sketchy and often flagged by antivirus software because you can't verify what it's actually doing. This open-source version solves that problem.
-
-**🛡️ Concerned about safety?** The whole source is here. Build it yourself with the steps below and compare. Antivirus heuristics dislike programs that send mouse input and read the screen; that is what a fishing macro does.
-
----
+- ✅ **Fully open source** — read every line, build it yourself
+- ✅ **No viruses** — nothing hidden, nothing to take on faith
+- ✅ **Actually cross-platform** — real native backends on both sides, not a Windows app limping along under Wine
 
 **Features:**
 
-- **🎣 Fishing System** - Automatic fish detection and tracking with a physics-based controller
-- **🍎 Devil Fruit Detection** - OCR-powered detection of devil fruit drops with keyword matching
-- **🌟 Fruit Spawn Alerts** - Detects and webhooks when devil fruits spawn with exact fruit name recognition
-- **📦 Auto Fruit Storage** - Automatically stores devil fruits in your fruit slots when detected
-- **🔔 Discord Webhook Alerts** - Notifications for devil fruit catches, world spawns, purchases and recoveries
-- **🛒 Auto-Purchase** - Configurable bait purchasing every X fish
-- **🪱 Auto Bait** - Re-selects your bait before every cast
-- **🎯 Auto Setup** - Zoom control and cast positioning
-- **🛟 Watchdog** - Restarts a stuck loop on its own
-- **💾 Presets** - Save and load full settings snapshots
-- **⬆️ Auto Update** - Updates itself from GitHub Releases
+- **🎣 Fishing System** — Automatic fish detection and tracking with a physics-based controller
+- **🍎 Devil Fruit Detection** — OCR-powered detection of devil fruit drops with keyword matching
+- **🌟 Fruit Spawn Alerts** — Detects and webhooks when devil fruits spawn with exact fruit name recognition
+- **📦 Auto Fruit Storage** — Automatically stores devil fruits in your fruit slots when detected
+- **🔔 Discord Webhook Alerts** — Notifications for devil fruit catches, world spawns, purchases and recoveries
+- **🛒 Auto-Purchase** — Configurable bait purchasing every X fish
+- **🪱 Auto Bait** — Re-selects your bait before every cast
+- **🎯 Auto Setup** — Zoom control and cast positioning
+- **🛟 Watchdog** — Restarts a stuck loop on its own
+- **💾 Presets** — Save and load full settings snapshots
 - **⌨️ Global hotkey support** (F1/F2/F3/F4, all rebindable)
 
 ## 🚀 Key Features
 
 ### 🍎 Devil Fruit Detection
 
-- **OCR Detection**: Detects devil fruit drops using Windows text recognition
+- **OCR Detection**: Detects devil fruit drops via text recognition (Windows OCR on Windows, tesseract on Linux)
 - **Spawn Detection**: Detects when devil fruits spawn in the world (all 33 GPO fruits)
 - **Fuzzy Matching**: Handles OCR errors with a similarity threshold
 - **Auto Storage**: Automatically stores caught fruits into two hotbar slots and re-equips the rod
@@ -72,28 +51,36 @@ The original closed-source macro is sketchy and often flagged by antivirus softw
 ### ⚡ Performance
 
 - **Fast Detection**: Bar tracking runs in microseconds, not Python pixel loops
-- **Tiny Footprint**: One small installer, no runtime to install
+- **Tiny Footprint**: Small installer, no runtime to install
 - **Logging**: Live activity feed in the Dashboard plus a log file in the data folder
 
 ## Installation
 
-### 🚀 Easy Installation (Recommended)
+### Windows
 
-1. **Download** the latest `GPO Autofish_x.y.z_x64-setup.exe` from Releases
-2. **Run it** - No admin needed
-3. **Launch GPO Autofish** - The panel opens; the HUD appears once Roblox is running
+1. **Download** the latest installer from [Releases](../../releases/latest)
+2. **Run it** — no admin needed
+3. **Launch TuxCast** — the panel opens; the HUD appears once Roblox is running
 
-Requires Windows 10 1809 or newer. Windows OCR needs an English language pack, which is present on nearly every install. The Setup page tells you if it is missing.
+Requires Windows 10 1809 or newer. Windows OCR needs an English language pack, present on nearly every install; the Setup page tells you if it's missing.
 
-### 🔧 Build the installer yourself
+### Linux (KDE Plasma / Wayland)
 
-Requirements: [Node.js 20+](https://nodejs.org) and [Rust](https://rustup.rs). WebView2 is already on Windows 11.
+1. **Download** the `.AppImage` or `.deb` from [Releases](../../releases/latest)
+2. Install/run it (`chmod +x *.AppImage && ./TuxCast*.AppImage`, or `sudo dpkg -i tuxcast*.deb`)
+3. Install `tesseract` for devil-fruit OCR (e.g. `sudo pacman -S tesseract tesseract-data-eng` / `sudo apt install tesseract-ocr`)
+4. On first run, approve the screen-share + input-control dialog KDE shows — this grants the companion the same screen-reading and click access the Windows build gets natively
 
-1. **Download the repository** as ZIP and extract it, or `git clone https://github.com/arielldev/gpo-fishing.git`
-2. **Double-click `MakeItExe.bat`** - It installs packages, builds the app and opens the folder with the installer
-3. **Run the installer** it produced, same as the one from Releases
+Requires KDE Plasma on Wayland. The window-management pieces (always-on-top, placement) are implemented against KWin specifically.
 
-Auto-update checks GitHub Releases on launch and can be turned off in Settings.
+### 🔧 Build it yourself
+
+Requirements: [Node.js 20+](https://nodejs.org) and [Rust](https://rustup.rs). On Linux, also GStreamer + PipeWire development packages (see the Linux job in `.github/workflows/release.yml` for the exact package list) and `tesseract`.
+
+```bash
+npm install
+npm run tauri build
+```
 
 ## 🎮 Quick Start Guide
 
@@ -104,7 +91,7 @@ Auto-update checks GitHub Releases on launch and can be turned off in Settings.
 
 ### First Time Setup
 
-1. **Launch**: Open Roblox, join GPO, then open GPO Autofish. The Setup page shows the window as detected
+1. **Launch**: Open Roblox, join GPO, then open TuxCast. The Setup page shows the window as detected
 2. **Bar area**: Cast once by hand. When the blue bar shows, open Setup › Fishing bar area and press **Auto-detect**. The thumbnail turns green when matched
 3. **Drop message area**: Draw it over the popup at the top middle of the screen where "New Item <Fruit>" and "A Fruit has spawned at Place" appear. Press **Read now** to confirm the OCR reads it
 4. **Rod key**: Slot `1`
@@ -145,7 +132,7 @@ Auto-update checks GitHub Releases on launch and can be turned off in Settings.
 - **F2**: Edit areas on screen
 - **F3**: Emergency stop and exit
 - **F4**: Hide/show the HUD
-- **Note**: All hotkeys work without admin privileges and can be rebound in Settings
+- **Note**: Rebindable in Settings
 
 ### Performance Tips
 
@@ -160,13 +147,14 @@ Auto-update checks GitHub Releases on launch and can be turned off in Settings.
 
 ### Runtime Issues
 
-- **HUD not showing**: It only appears while Roblox is running and not minimized. Press F4 if you hid it
+- **HUD not showing**: It only appears while Roblox is running, visible, and focused. Press F4 if you hid it
 - **Hotkeys not working**: Another app may own the key. Rebind in Settings › Hotkeys
 - **Fish detection failing**: Open Setup › Fishing bar area. If the match score is low, raise Settings › Color tolerance or redraw the area tighter around the bar
 - **Devil fruit not detected**: Setup › Drop message area › Read now shows exactly what the OCR sees
 - **Fruit spawns not detected**: Ensure the drop message area covers the spawn popup
 - **Auto-purchase failing**: Verify the Confirm and Quantity points are set and you are standing next to the bait barrel
 - **Logs**: Settings › Data folder › `logs/`
+- **(Linux) Screen-share dialog reappears every launch**: expected — KDE doesn't allow persisting the input-control grant, only the screen-capture one
 
 ### Devil Fruit Issues
 
@@ -181,7 +169,7 @@ Auto-update checks GitHub Releases on launch and can be turned off in Settings.
 
 ```
 src-tauri/src/
-├── core/platform/       # OS traits (window, capture, input, OCR) + Windows implementations
+├── core/platform/       # OS traits (window, capture, input, OCR) + Windows/Linux implementations
 ├── core/vision.rs       # Bar / fish / marker detection
 ├── core/fruit.rs        # Drop and spawn text matching
 ├── core/controller.rs   # Reel controller
@@ -196,17 +184,6 @@ src/
 ```
 
 Everything OS-specific sits behind traits in `src-tauri/src/core/platform/mod.rs`, so other capture or OCR backends can be added without touching the bot logic. Fruit names and drop phrases live in settings under `lexicon`, so a game update does not need a rebuild.
-
-## 🤝 Contributing
-
-This is an open-source project! Feel free to:
-
-- Report bugs and issues
-- Suggest new features
-- Submit pull requests
-- Join our Discord community
-
-**💬 Discord:** https://discord.gg/unPZxXAtfb
 
 ## License
 

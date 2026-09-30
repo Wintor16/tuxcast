@@ -2,7 +2,7 @@
 name = "gpo-autofish"
 version = "4.0.1"
 description = "Grand Piece Online fishing companion"
-authors = ["arielldev"]
+authors = ["wintor16"]
 edition = "2021"
 rust-version = "1.80"
 
