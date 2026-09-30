@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { check } from "@tauri-apps/plugin-updater";
-import { Download, FolderOpen, RotateCcw, Save, Trash2, Upload } from "lucide-react";
+import { Download, FolderOpen, LogOut, RotateCcw, Save, Trash2, Upload } from "lucide-react";
 import { api } from "../lib/ipc";
 import { useStore } from "../lib/store";
 import { Button, KeyCapture, Pill, Row, Section, Segmented, Slider, Stepper, TextField, Toggle } from "../components/primitives";
@@ -247,10 +247,11 @@ export default function SettingsPage() {
           }
         />
         <Row
-          title="Discord community"
+          title="Quit TuxCast"
+          sub="Stops the bot and closes the panel, HUD and tray icon."
           right={
-            <Button size="sm" kind="ghost" onClick={() => api.openUrl("https://discord.gg/unPZxXAtfb")}>
-              Open
+            <Button size="sm" kind="ghost" onClick={() => api.quit()} icon={<LogOut size={13} />}>
+              Quit
             </Button>
           }
         />
