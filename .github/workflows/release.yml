@@ -68,3 +68,39 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+      - name: Strip bundled GStreamer from the AppImage
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          set -e
+          APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" | head -1)
+          ABS_APPIMAGE=$(readlink -f "$APPIMAGE")
+          echo "Repackaging $ABS_APPIMAGE"
+          WORKDIR=$(mktemp -d)
+          pushd "$WORKDIR"
+          "$ABS_APPIMAGE" --appimage-extract >/dev/null
+          # linuxdeploy pulls its own private GStreamer core (pinned to whatever
+          # webkit2gtk depended on at build time, e.g. 1.23.90) into the AppDir.
+          # It bundles no plugins alongside it, so at runtime we point
+          # GST_PLUGIN_SYSTEM_PATH at the host's real GStreamer plugins (see
+          # ensure_gst_plugin_path in portal.rs) - but those plugins are built
+          # against the host's much newer GStreamer core, so loading e.g.
+          # pipewiresrc against the bundled 1.23.90 core fails with an
+          # undefined-symbol error. Deleting the bundled core/helper libs makes
+          # both our binary and webkit2gtk fall back to the host's GStreamer
+          # install, which is consistent with the host's own plugins.
+          rm -f squashfs-root/usr/lib/libgst*.so*
+          wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
+          APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool squashfs-root "$ABS_APPIMAGE"
+          popd
+          rm -rf "$WORKDIR"
+
+      - name: Re-upload fixed AppImage
+        if: matrix.platform == 'ubuntu-latest'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          APPIMAGE=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" | head -1)
+          gh release upload ${{ github.ref_name }} "$APPIMAGE" --clobber --repo ${{ github.repository }}
