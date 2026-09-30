@@ -271,18 +271,19 @@ impl Connected {
 /// not the distro's `/usr/lib/gstreamer-1.0` — so `pipewiresrc` (from the
 /// separately-packaged `gstreamer1.0-pipewire` /
 /// `gst-plugin-pipewire` distro package) silently fails to resolve even
-/// though it's genuinely installed on the system (confirmed: this exact
-/// symptom reproduced from the published AppImage on a machine with the
-/// plugin present). Pointing GStreamer at the common system plugin
-/// directories as a fallback fixes it without needing to bundle GStreamer
-/// plugins into the package. Only appends paths that actually exist, and
-/// never overrides a path the user/environment already set.
+/// though it's genuinely installed on the system.
+///
+/// A first attempt at this fix skipped entirely whenever
+/// `GST_PLUGIN_SYSTEM_PATH(_1_0)` was already set, meaning to avoid
+/// clobbering a deliberate user override — but linuxdeploy's own GStreamer
+/// bundling plugin *always* sets these (pointing only at the AppImage's
+/// own bundled plugin dir, which doesn't include pipewiresrc), so that
+/// guard made the fix a no-op in the one build that actually needed it
+/// (confirmed: reproduced from the published AppImage with this exact
+/// env already set to the bundled-only path). Appending the system
+/// directories instead — rather than skipping or overwriting — fixes
+/// that case while still leaving a real user override intact.
 fn ensure_gst_plugin_path() {
-    if std::env::var_os("GST_PLUGIN_SYSTEM_PATH_1_0").is_some()
-        || std::env::var_os("GST_PLUGIN_SYSTEM_PATH").is_some()
-    {
-        return;
-    }
     const CANDIDATES: &[&str] = &[
         "/usr/lib/gstreamer-1.0",
         "/usr/lib/x86_64-linux-gnu/gstreamer-1.0",
@@ -290,10 +291,16 @@ fn ensure_gst_plugin_path() {
         "/usr/lib/aarch64-linux-gnu/gstreamer-1.0",
     ];
     let existing: Vec<&str> = CANDIDATES.iter().copied().filter(|p| std::path::Path::new(p).is_dir()).collect();
-    if !existing.is_empty() {
-        let joined = existing.join(":");
-        std::env::set_var("GST_PLUGIN_SYSTEM_PATH_1_0", &joined);
-        std::env::set_var("GST_PLUGIN_SYSTEM_PATH", &joined);
+    if existing.is_empty() {
+        return;
+    }
+    let extra = existing.join(":");
+    for key in ["GST_PLUGIN_SYSTEM_PATH_1_0", "GST_PLUGIN_SYSTEM_PATH"] {
+        let combined = match std::env::var(key) {
+            Ok(current) if !current.is_empty() => format!("{current}:{extra}"),
+            _ => extra.clone(),
+        };
+        std::env::set_var(key, combined);
     }
 }
 
