@@ -148,6 +148,20 @@ fn spawn_pin_above_watcher() {
 #[cfg(not(target_os = "linux"))]
 fn spawn_pin_above_watcher() {}
 
+// Each Linux query does a full KWin script load/run/unload round-trip
+// (necessary for correctness — see the `KWinWindow` doc comment), and
+// polling that as fast as Windows' cheap GetForegroundWindow (50ms)
+// visibly perturbs the reported focus state often enough to flicker the
+// HUD. 200ms keeps the watcher responsive while avoiding that.
+#[cfg(target_os = "linux")]
+fn roblox_poll_ms() -> u64 {
+    200
+}
+#[cfg(not(target_os = "linux"))]
+fn roblox_poll_ms() -> u64 {
+    50
+}
+
 fn spawn_roblox_watcher(platform: Platform, roblox: Arc<RwLock<Option<WindowInfo>>>, tx: Sender<BotEvent>) {
     std::thread::Builder::new()
         .name("roblox-watcher".into())
@@ -172,7 +186,7 @@ fn spawn_roblox_watcher(platform: Platform, roblox: Arc<RwLock<Option<WindowInfo
                     let _ = tx.send(BotEvent::Roblox(now));
                     last = now;
                 }
-                std::thread::sleep(Duration::from_millis(if now.is_some() { 50 } else { 500 }));
+                std::thread::sleep(Duration::from_millis(if now.is_some() { roblox_poll_ms() } else { 500 }));
             }
         })
         .expect("spawn roblox watcher");
