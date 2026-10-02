@@ -98,7 +98,19 @@ fn spawn_event_forwarder(app: AppHandle, rx: Receiver<BotEvent>) {
         .name("event-forwarder".into())
         .spawn(move || {
             for ev in rx.iter() {
-                let _ = app.emit(ev.channel(), &ev);
+                // `BotEvent` is internally tagged (`tag = "kind"`), which serde
+                // cannot apply to a newtype variant wrapping an `Option` (it
+                // needs the content to serialize as a map to merge the tag
+                // in) - `Roblox(Option<WindowInfo>)` fails to serialize in
+                // *both* the Some and None cases, so emitting it through the
+                // generic path silently never reaches the frontend at all.
+                // The frontend only wants the plain `WindowInfo | null`
+                // anyway, so emit that directly instead of the tagged enum.
+                if let BotEvent::Roblox(info) = &ev {
+                    let _ = app.emit("roblox:changed", info);
+                } else {
+                    let _ = app.emit(ev.channel(), &ev);
+                }
                 match &ev {
                     BotEvent::State { state, .. } => tray::update(&app, *state),
                     BotEvent::Roblox(info) => windows::on_roblox_changed(&app, *info),

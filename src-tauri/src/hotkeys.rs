@@ -1,3 +1,6 @@
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+
 use tauri::{AppHandle, Manager};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
@@ -27,11 +30,22 @@ pub fn register(app: &AppHandle, keys: &Hotkeys) -> Result<(), String> {
             continue;
         }
         let shortcut: Shortcut = combo.parse().map_err(|_| format!("Invalid hotkey: {combo}"))?;
-        gs.on_shortcut(shortcut, move |app, _sc, ev| {
-            if ev.state() != ShortcutState::Pressed {
-                return;
+        // X11/Wayland key-repeat resends `Pressed` for as long as the key is
+        // held, and holding a key for even a normal press duration is enough
+        // to fire several of these - which, unguarded, toggled the bot
+        // start/pause several times per keypress (confirmed via duplicate
+        // "Resumed" log lines at the identical microsecond). Only dispatch
+        // on the transition into "held", not on every repeat.
+        let held = Arc::new(AtomicBool::new(false));
+        gs.on_shortcut(shortcut, move |app, _sc, ev| match ev.state() {
+            ShortcutState::Pressed => {
+                if !held.swap(true, Ordering::SeqCst) {
+                    dispatch(app, action);
+                }
             }
-            dispatch(app, action);
+            ShortcutState::Released => {
+                held.store(false, Ordering::SeqCst);
+            }
         })
         .map_err(|e| format!("Could not bind {combo}: {e}"))?;
     }
